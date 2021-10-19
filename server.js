@@ -1,27 +1,25 @@
-const express = require('express');
+// const express = require('express');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
-
-const PORT = process.env.PORT || 3001;
-const app = express();
-
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+require('dotenv').config();
+//import console.table library
+require('console.table');
 
 // Connect to database
 const db = mysql.createConnection(
     {
-        host: 'localhost',
+        host: process.env.DB_HOST,
         // MySQL username,
-        user: 'root',
-        // TODO: Add MySQL password here
-        password: 'simple123',
+        user: process.env.DB_USER,
+        password: process.env.DB_PASS,
         database: 'company'
     },
-    console.log(`Connected to the company database.`)
+    console.log(`Company database is connected successfully.`)
 );
-
+db.connect(err => {
+    if (err) throw err;
+    userOption();
+})
 //function for option
 function userOption() {
     inquirer.prompt([
@@ -36,7 +34,8 @@ function userOption() {
                 'Add a department',
                 'Add a role',
                 'Add an employee',
-                'Update an employee role'
+                'Update an employee role',
+                'Exit'
             ]
         }
     ]).then((answer) => {
@@ -62,9 +61,37 @@ function userOption() {
         if (answer.option === 'Update an employee role') {
             updateEmpRole();
         }
+        if (answer.option === 'Exit') {
+            db.end();
+            console.log('Exit the database')
+        }
     })
 };
-userOption();
+// function view department
+function viewAllDept() {
+    db.query('SELECT * FROM department', function (err, result) {
+        if (err) throw err;
+        console.table(result);
+        userOption();
+    })
+}
+//function view role
+function viewAllRoles() {
+    db.query('SELECT role.id AS id, role.title AS title, department.name AS department, role.salary FROM role JOIN department ON role.department_id = department.id ORDER BY role.id;', function (err, result) {
+        if (err) throw err;
+        console.table(result);
+        userOption();
+    })
+}
+//function view employee
+function viewAllEmp() {
+    const sql = `SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT (manager.first_name, " ", manager.last_name) AS manager FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id LEFT JOIN employee manager ON employee.manager_id= manager.id ORDER BY employee.id;`;
+    db.query(sql, function (err, result) {
+        if (err) throw err;
+        console.table(result);
+        userOption();
+    })
+}
 //function to add department
 function addDepartment() {
     inquirer.prompt([
@@ -81,8 +108,14 @@ function addDepartment() {
                 }
             }
         }
-    ]).then(answerDept => {
+    ]).then((answerDept) => {
         console.log(answerDept);
+        db.query(`INSERT INTO department (name)
+                  VALUES ('${answerDept.addDepartment}');`, (err, result) => {
+            if (err) throw err;
+            console.log('Add new department - ' + answerDept.addDepartment);
+            userOption();
+        })
     })
 }
 //function add Role
