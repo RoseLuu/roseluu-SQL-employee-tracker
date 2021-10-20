@@ -13,7 +13,7 @@
  
  # Instruction video : 
   
-  [Instruction video](https://dry-meadow-47853.herokuapp.com/)
+  [Instruction video](https://drive.google.com/file/d/1DRmIzfuVhap_wYiB3P4fOPqfCXdvtfOD/view)
   
   # Description
   This is a employee tracking using Node.js, Inquirer and MySQL. Help user interact and manipulate database.
