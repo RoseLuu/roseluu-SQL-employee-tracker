@@ -273,7 +273,8 @@ function updateEmpRole() {
                     const role = roleChoice.newRole;
                     updateInfo.push(role);
                     console.log(updateInfo);
-                    db.query('UPDATE employee SET role_id= ? WHERE id = ?', updateInfo, (err, result) => {
+                    const reverse = updateInfo.reverse();
+                    db.query('UPDATE employee SET role_id= ? WHERE id = ?', reverse, (err, result) => {
                         if (err) throw err;
                         console.log('Updated employee is role')
                         userOption();
