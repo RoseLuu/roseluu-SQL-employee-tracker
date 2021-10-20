@@ -16,6 +16,7 @@ const db = mysql.createConnection(
     },
     console.log(`Company database is connected successfully.`)
 );
+
 db.connect(err => {
     if (err) throw err;
     userOption();
@@ -146,15 +147,31 @@ function addRole() {
                     return false;
                 }
             }
-        },
-        {
-            type: 'list',
-            name: 'roleDepartment',
-            message: 'Please chose department for the role:',
-            // choices:[]  
         }
     ]).then(answerRole => {
-        console.log(answerRole);
+        const newRole = [answerRole.roleName, answerRole.roleSalary];
+        //grab the department data and convert it into a new object
+        db.query('SELECT * FROM department', async (err, result) => {
+            if (err) throw err;
+            const dept = await result.map(({ id, name }) => ({ name: name, value: id }));
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'roleDepartment',
+                    message: 'Please chose department for the role:',
+                    choices: dept
+                }
+            ])
+                .then((deptChoice) => {
+                    const userDeptChoice = deptChoice.roleDepartment;
+                    newRole.push(userDeptChoice);
+                    db.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?);`, newRole, (err, result) => {
+                        if (err) throw err;
+                        console.log('Add new role - ' + answerRole.roleName);
+                        userOption();
+                    })
+                })
+        })
     })
 }
 //function add Employee
