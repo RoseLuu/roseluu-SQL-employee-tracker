@@ -273,6 +273,7 @@ function updateEmpRole() {
                     const role = roleChoice.newRole;
                     updateInfo.push(role);
                     console.log(updateInfo);
+                    //the updateInfo array has to be reverse to be in the right position
                     const reverse = updateInfo.reverse();
                     db.query('UPDATE employee SET role_id= ? WHERE id = ?', reverse, (err, result) => {
                         if (err) throw err;
